@@ -1,4 +1,7 @@
 from distutils.core import setup
+import shutil, os
+
+shutil.copy('README.md', 'README')
 
 setup(
     name='pyfaceb',
@@ -11,3 +14,5 @@ setup(
     description='Full-featured, lightweight Facebook API wrapper for Graph & FQL.',
     long_description=open('README').read(),
 )
+
+os.remove('README')
