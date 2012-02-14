@@ -1,10 +1,11 @@
-import urllib
+import urllib, urllib2
 import json
 import time
 
 BASE_GRAPH_URL = "https://graph.facebook.com"
 BASE_FQL_URL = "https://graph.facebook.com/fql?"
 BATCH_QUERY_LIMIT = 50
+TIMEOUT = 60
 
 def GetRequestFactory(relative_url, **params):
     ''' Returns a properly formed GET request dictionary. '''
@@ -51,7 +52,7 @@ class FBGraph(object):
         start_time = time.time()
 
         path = self._emit_graph_url(object_id, connection)
-        results = urllib.urlopen(BASE_GRAPH_URL + path + qry_str_enc).read()
+        results = urllib2.urlopen(BASE_GRAPH_URL + path + qry_str_enc, timeout=TIMEOUT).read()
         if results != '[]':
             results_dict = json.loads(results)
 
@@ -69,7 +70,7 @@ class FBGraph(object):
         start_time = time.time()
 
         # POST the data, batch queries must be POSTed
-        results = urllib.urlopen(BASE_GRAPH_URL, qry_str_enc).read()
+        results = urllib2.urlopen(BASE_GRAPH_URL, qry_str_enc, timeout=TIMEOUT).read()
         if results != '[]':
             results_dict = json.loads(results)
 
@@ -100,7 +101,7 @@ class FBQuery(object):
 
             start_time = time.time()
 
-            results = urllib.urlopen(BASE_FQL_URL + fql_str_enc).read()
+            results = urllib2.urlopen(BASE_FQL_URL + fql_str_enc, timeout=TIMEOUT).read()
             if (results != '[]'):
                 results_dict = json.loads(results)
 
