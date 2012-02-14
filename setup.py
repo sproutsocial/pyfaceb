@@ -5,7 +5,7 @@ shutil.copy('README.md', 'README')
 
 setup(
     name='pyfaceb',
-    version='0.1.0',
+    version='0.1.1',
     author='Kevin Stanton',
     author_email='kevin@sproutsocial.com',
     packages=['pyfaceb', 'pyfaceb.test'],
