@@ -52,7 +52,12 @@ class FBGraph(object):
         start_time = time.time()
 
         path = self._emit_graph_url(object_id, connection)
-        results = urllib2.urlopen(BASE_GRAPH_URL + path + qry_str_enc, timeout=TIMEOUT).read()
+
+        try:
+            results = urllib2.urlopen(BASE_GRAPH_URL + path + qry_str_enc, timeout=TIMEOUT).read()
+        except urllib2.HTTPError as e:
+            results = e.read()
+
         if results != '[]':
             results_dict = json.loads(results)
 
@@ -70,7 +75,11 @@ class FBGraph(object):
         start_time = time.time()
 
         # POST the data, batch queries must be POSTed
-        results = urllib2.urlopen(BASE_GRAPH_URL, qry_str_enc, timeout=TIMEOUT).read()
+        try:
+            results = urllib2.urlopen(BASE_GRAPH_URL, qry_str_enc, timeout=TIMEOUT).read()
+        except urllib2.HTTPError as e:
+            results = e.read()
+
         if results != '[]':
             results_dict = json.loads(results)
 
@@ -101,7 +110,11 @@ class FBQuery(object):
 
             start_time = time.time()
 
-            results = urllib2.urlopen(BASE_FQL_URL + fql_str_enc, timeout=TIMEOUT).read()
+            try:
+                results = urllib2.urlopen(BASE_FQL_URL + fql_str_enc, timeout=TIMEOUT).read()
+            except urllib2.HTTPError as e:
+                results = e.read()
+
             if (results != '[]'):
                 results_dict = json.loads(results)
 
