@@ -1,11 +1,14 @@
-import urllib, urllib2
+import requests
 import json
 import time
+
+from . import FBException
 
 BASE_GRAPH_URL = "https://graph.facebook.com"
 BASE_FQL_URL = "https://graph.facebook.com/fql?"
 BATCH_QUERY_LIMIT = 50
-TIMEOUT = 60
+TIMEOUT = 60.0
+REQUESTS_CONFIG = {'max_retries': 2}
 
 def GetRequestFactory(relative_url, **params):
     ''' Returns a properly formed GET request dictionary. '''
@@ -23,73 +26,56 @@ class FBGraph(object):
         self._access_token = access_token
         self._response_fmt = 'json'
 
-    def _emit_url_params(self, params=None):
-        query_params = {}
-
-        if params:
-            query_params = params
-            query_params['access_token'] = self._access_token
-        else:
-            query_params['access_token'] = self._access_token
-
-        return query_params
-
     def _emit_graph_url(self, object_id, connection=''):
-        url_fragment = '/'
+        url = BASE_GRAPH_URL + '/' + str(object_id)
 
         if connection != '':
-            url_fragment += str(object_id) + '/' + str(connection) + '?'
-        else:
-            url_fragment += str(object_id) + '?'
+            url += '/' + str(connection)
 
-        return url_fragment
-
-    def get(self, object_id, connection='', params=None):
-        results_dict = {}
-
-        qry_str_enc = urllib.urlencode(self._emit_url_params(params))
-
-        start_time = time.time()
+        return url
+    
+    def get(self, object_id, connection='', params={}):
+        '''
+        Query's facebook's graph api using an object_id, and optional connection and
+        query string parameters, where params is a python dict.
+        '''
+        data = {}
+        params['access_token'] = self._access_token
 
         path = self._emit_graph_url(object_id, connection)
+        r = requests.get(path, params=params, timeout=TIMEOUT, config=REQUESTS_CONFIG)
+        
+        if r.status_code != requests.codes.ok:
+            raise FBException(r.text)
 
-        try:
-            results = urllib2.urlopen(BASE_GRAPH_URL + path + qry_str_enc, timeout=TIMEOUT).read()
-        except urllib2.HTTPError as e:
-            results = e.read()
+        data = json.loads(r.text)
 
-        if results != '[]':
-            results_dict = json.loads(results)
-
-        stop_time = time.time()
-        duration = stop_time - start_time
-        results_dict['query_time'] = duration
-
-        return results_dict
+        return data
 
     def get_batch(self, batch):
-        results_dict = {}
+        '''
+        Query's facebook's graph api in batches. batch is a list of dicts, where each
+        dict is of the form {'method': 'GET', 'relative_url': 'someurl', ...}. There
+        are optional params available, see: https://developers.facebook.com/docs/reference/api/batch/
+        '''
+        data = []
+        payload = {'batch': json.dumps(batch), 'access_token': self._access_token}
 
-        qry_str_enc = urllib.urlencode(self._emit_url_params({'batch': batch}))
-
-        start_time = time.time()
-
-        # POST the data, batch queries must be POSTed
-        try:
-            results = urllib2.urlopen(BASE_GRAPH_URL, qry_str_enc, timeout=TIMEOUT).read()
-        except urllib2.HTTPError as e:
-            results = e.read()
-
-        if results != '[]':
-            results_dict = json.loads(results)
-
-        stop_time = time.time()
-        duration = stop_time - start_time
-        #TODO: Figure out what to do for this...batch queries returns an array
-        #of responses, not a dict like the basic graph API calls...
-        #results_dict['query_time'] = duration
-
-        return results_dict
+        r = requests.post(BASE_GRAPH_URL, data=payload, timeout=TIMEOUT, config=REQUESTS_CONFIG)
+        
+        if r.status_code != requests.codes.ok:
+            raise FBException(r.text)
+        
+        data = json.loads(r.text)
+        
+        # deserialize the body of the response, need to make sure it
+        # is deserializable, thanks to this bug:
+        # https://developers.facebook.com/bugs/295201867209494
+        for d in data:
+            if isinstance(d, dict) and 'body' in d:
+                d['body'] = json.loads(d['body'])
+        
+        return data
 
 
 class FBQuery(object):
@@ -102,27 +88,21 @@ class FBQuery(object):
         return {'q': qry, 'access_token' : self._access_token,
                 'format': self._response_fmt}
 
-    def query(self, fql_str=None):
-        results_dict = {}
-#try:
-        if fql_str:
-            fql_str_enc = urllib.urlencode(self._emit_qry_url_parms(fql_str))
+    def query(self, fql_str):
+        data = {}
+        params = {'q': fql_str, 'access_token' : self._access_token, 'format': self._response_fmt}
 
-            start_time = time.time()
+        start_time = time.time()
 
-            try:
-                results = urllib2.urlopen(BASE_FQL_URL + fql_str_enc, timeout=TIMEOUT).read()
-            except urllib2.HTTPError as e:
-                results = e.read()
+        r = requests.get(BASE_FQL_URL, params=params, timeout=TIMEOUT, config=REQUESTS_CONFIG)
+        
+        if r.status_code != requests.codes.ok:
+            raise FBException(r.text)
 
-            if (results != '[]'):
-                results_dict = json.loads(results)
+        data = json.loads(r.text)
 
-            stop_time = time.time()
-            duration = stop_time - start_time
-            results_dict['query_time'] = duration
-        else:
-            raise Exception
+        stop_time = time.time()
+        duration = stop_time - start_time
+        data['query_time'] = duration
 
-        return results_dict
-#except:
+        return data
