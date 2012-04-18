@@ -1,0 +1,2 @@
+class FBException(Exception):
+    pass

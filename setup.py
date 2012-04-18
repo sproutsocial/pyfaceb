@@ -1,8 +1,9 @@
 from distutils.core import setup
+import pyfaceb
 
 setup(
     name='pyfaceb',
-    version='0.1.4',
+    version=pyfaceb.__version__,
     author='Kevin Stanton',
     author_email='kevin@sproutsocial.com',
     packages=['pyfaceb', 'pyfaceb.test'],

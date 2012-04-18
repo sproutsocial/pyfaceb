@@ -1,14 +1,17 @@
 import requests
 import json
 import time
+import logging
 
-from . import FBException
+from .exceptions import FBException
 
 BASE_GRAPH_URL = "https://graph.facebook.com"
 BASE_FQL_URL = "https://graph.facebook.com/fql?"
 BATCH_QUERY_LIMIT = 50
 TIMEOUT = 60.0
 REQUESTS_CONFIG = {'max_retries': 2}
+
+log = logging.getLogger(__name__)
 
 def GetRequestFactory(relative_url, **params):
     ''' Returns a properly formed GET request dictionary. '''
@@ -36,7 +39,7 @@ class FBGraph(object):
     
     def get(self, object_id, connection='', params={}):
         '''
-        Query's facebook's graph api using an object_id, and optional connection and
+        Query facebook's graph api using an object_id, and optional connection and
         query string parameters, where params is a python dict.
         '''
         data = {}
@@ -48,7 +51,11 @@ class FBGraph(object):
         if r.status_code != requests.codes.ok:
             raise FBException(r.text)
 
-        data = json.loads(r.text)
+        try:
+            data = json.loads(r.text)
+        except ValueError as e:
+            log.warn("Error decoding JSON: {0}. JSON={1}".format(e.message, r.text))
+            raise FBException(e.message)
 
         return data
 
@@ -66,14 +73,24 @@ class FBGraph(object):
         if r.status_code != requests.codes.ok:
             raise FBException(r.text)
         
-        data = json.loads(r.text)
+        try:
+            data = json.loads(r.text)
+        except ValueError as e:
+            log.warn("Error decoding JSON: {0}. JSON={1}".format(e.message, r.text))
+            raise FBException(e.message)
         
-        # deserialize the body of the response, need to make sure it
+        # deserialize the body of each batch response, need to make sure it
         # is deserializable, thanks to this bug:
         # https://developers.facebook.com/bugs/295201867209494
         for d in data:
             if isinstance(d, dict) and 'body' in d:
-                d['body'] = json.loads(d['body'])
+                # default to something, in case deserialization fails
+                d['body'] = {}
+                try:
+                    d['body'] = json.loads(d['body'])
+                except Exception as e:
+                    log.warn("Error decoding JSON in batched request: {0}".format(e.message))
+                    pass
         
         return data
 
