@@ -1,3 +1,4 @@
+v0.1.6, Apr 18 2012 -- Fixed major bug in FBGraph.get_batch() method.
 v0.1.5, Apr 18 2012 -- Added logging, handling of JSON decoding errors.
 v0.1.3, Feb 27 2012 -- Fixing issues relating to pip packaging.
 v0.1.0, Feb 13 2012 -- Initial release.

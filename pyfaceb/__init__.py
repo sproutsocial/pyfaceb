@@ -1,6 +1,6 @@
 # PyFaceB
 __author__ = 'Kevin Stanton (kevin@sproutsocial.com)'
-__version__ = '0.1.5'
+__version__ = '0.1.6'
 
 from .api import *
 from .exceptions import FBException

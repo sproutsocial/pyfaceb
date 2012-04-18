@@ -84,12 +84,11 @@ class FBGraph(object):
         # https://developers.facebook.com/bugs/295201867209494
         for d in data:
             if isinstance(d, dict) and 'body' in d:
-                # default to something, in case deserialization fails
-                d['body'] = {}
                 try:
                     d['body'] = json.loads(d['body'])
                 except Exception as e:
                     log.warn("Error decoding JSON in batched request: {0}".format(e.message))
+                    d['body'] = {'data': []} # default in case deserialization fails
                     pass
         
         return data
