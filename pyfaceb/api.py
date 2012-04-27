@@ -115,7 +115,11 @@ class FBQuery(object):
         if r.status_code != requests.codes.ok:
             raise FBException(r.text)
 
-        data = json.loads(r.text)
+        try:
+            data = json.loads(r.text)
+        except ValueError as e:
+            log.warn("Error decoding JSON: {0}. JSON={1}".format(e.message, r.text))
+            raise FBException(e.message)
 
         stop_time = time.time()
         duration = stop_time - start_time
