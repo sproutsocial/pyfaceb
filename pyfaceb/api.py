@@ -21,7 +21,7 @@ def GetRequestFactory(relative_url, **params):
 
     return params
 
-#TODO: POST, PUT, DELETE request factories
+#TODO: PUT, DELETE request factories
 
 class FBGraph(object):
     def __init__(self, access_token=''):
@@ -58,12 +58,58 @@ class FBGraph(object):
             raise FBException(e.message)
 
         return data
+    
+    def post(self, object_id, connection='', payload={}):
+        '''
+        Publish to the graph.
+        Returns a deserialized python object, see `Graph API<https://developers.facebook.com/docs/reference/api/>`_
+        
+        Note: this method requires a valid access token to work.
+        
+        Example 1::
+           data = fbg.post('me', 'feed', {'message': 'Hello, Facebook World!'})
+           print data
+           # {u'id': u'537208670_111222333444555666777'}
+        
+        Example 2::
+        
+           new_pic = open('my_pic.png', 'rb')
+           data = fbg.post('me', 'photos', {
+              'source': new_pic,
+              'message': 'Hey, I\'m posting a picture on Facebook!'})
+           print data
+           # {u'id': u'123456789012', u'post_id': u'537208670_123456789012'}
+        '''
+        files = {}
+        for k in payload.keys():
+            if isinstance(payload[k], file):
+                files[k] = payload[k]
+                del payload[k]
+                
+        payload['access_token'] = self._access_token
+        
+        path = self._emit_graph_url(object_id, connection)
+        r = requests.post(path, data=payload, files=files, timeout=TIMEOUT, config=REQUESTS_CONFIG)
+        
+        if r.status_code != requests.codes.ok:
+            raise FBException(r.text)
+        
+        try:
+            data = json.loads(r.text)
+        except ValueError as e:
+            log.warn("Error decoding JSON: {0}. JSON={1}".format(e.message, r.text))
+            raise FBException(e.message)
+        
+        return data
 
-    def get_batch(self, batch):
+    def batch(self, batch):
         '''
         Query's facebook's graph api in batches. batch is a list of dicts, where each
-        dict is of the form {'method': 'GET', 'relative_url': 'someurl', ...}. There
-        are optional params available, see: https://developers.facebook.com/docs/reference/api/batch/
+        dict is of the form::
+        
+           {'method': 'GET', 'relative_url': 'someurl', ...}.
+           
+        There are optional params available, see: https://developers.facebook.com/docs/reference/api/batch/
         '''
         data = []
         payload = {'batch': json.dumps(batch), 'access_token': self._access_token}
