@@ -1,9 +1,12 @@
 from distutils.core import setup
-import pyfaceb
+
+# place __version__ in setup.py namespace, w/o
+# having to import and creating a dependency nightmare
+execfile('pyfaceb/version.py')
 
 setup(
     name='pyfaceb',
-    version=pyfaceb.__version__,
+    version=__version__,
     author='Kevin Stanton',
     author_email='kevin@sproutsocial.com',
     packages=['pyfaceb', 'pyfaceb.test'],
