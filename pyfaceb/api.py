@@ -2,8 +2,10 @@ import requests
 import json
 import time
 import logging
+from requests.exceptions import SSLError, Timeout
 
-from .exceptions import FBException
+from .exceptions import (FBException, FBHTTPException, FBJSONException,
+    FBConnectionException)
 
 BASE_GRAPH_URL = "https://graph.facebook.com"
 BASE_FQL_URL = "https://graph.facebook.com/fql?"
@@ -36,7 +38,34 @@ class FBGraph(object):
             url += '/' + str(connection)
 
         return url
-    
+
+    def _issue_request(self, method, url, **kwargs):
+        """
+        Generic method for making requests to the Graph API and deserializing
+        the response. Here we aggregate all general error-handling & exception
+        catching/raising.
+
+        Returns: deserialized JSON as native Python data structures.
+        """
+        data = {}
+
+        try:
+            r = requests.request(method, url,
+                timeout=TIMEOUT, config=REQUESTS_CONFIG, **kwargs)
+        except (SSLError, Timeout) as e:
+            raise FBConnectionException(e.message)
+
+        if r.status_code != requests.codes.ok:
+            raise FBHTTPException(r.text)
+
+        try:
+            data = json.loads(r.text)
+        except ValueError as e:
+            log.warn("Error decoding JSON: {0}. JSON={1}".format(e.message, r.text))
+            raise FBJSONException(e.message)
+
+        return data
+
     def get(self, object_id, connection='', params={}):
         '''
         Query facebook's graph api using an object_id, and optional connection and
@@ -46,16 +75,7 @@ class FBGraph(object):
         params['access_token'] = self._access_token
 
         path = self._emit_graph_url(object_id, connection)
-        r = requests.get(path, params=params, timeout=TIMEOUT, config=REQUESTS_CONFIG)
-        
-        if r.status_code != requests.codes.ok:
-            raise FBException(r.text)
-
-        try:
-            data = json.loads(r.text)
-        except ValueError as e:
-            log.warn("Error decoding JSON: {0}. JSON={1}".format(e.message, r.text))
-            raise FBException(e.message)
+        data = self._issue_request('get', path, params=params)
 
         return data
     
@@ -89,17 +109,8 @@ class FBGraph(object):
         payload['access_token'] = self._access_token
         
         path = self._emit_graph_url(object_id, connection)
-        r = requests.post(path, data=payload, files=files, timeout=TIMEOUT, config=REQUESTS_CONFIG)
-        
-        if r.status_code != requests.codes.ok:
-            raise FBException(r.text)
-        
-        try:
-            data = json.loads(r.text)
-        except ValueError as e:
-            log.warn("Error decoding JSON: {0}. JSON={1}".format(e.message, r.text))
-            raise FBException(e.message)
-        
+        data = self._issue_request('post', path, data=payload, files=files)
+
         return data
 
     def batch(self, batch):
@@ -114,16 +125,7 @@ class FBGraph(object):
         data = []
         payload = {'batch': json.dumps(batch), 'access_token': self._access_token}
 
-        r = requests.post(BASE_GRAPH_URL, data=payload, timeout=TIMEOUT, config=REQUESTS_CONFIG)
-        
-        if r.status_code != requests.codes.ok:
-            raise FBException(r.text)
-        
-        try:
-            data = json.loads(r.text)
-        except ValueError as e:
-            log.warn("Error decoding JSON: {0}. JSON={1}".format(e.message, r.text))
-            raise FBException(e.message)
+        data = self._issue_request('post', BASE_GRAPH_URL, data=payload)
         
         # deserialize the body of each batch response, need to make sure it
         # is deserializable, thanks to this bug:
