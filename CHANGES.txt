@@ -1,3 +1,5 @@
+v0.2.0, Jun 01 2012 -- FBGraph get(), post() signature change to simplify calls & make orthogonal to batch rqsts
+v0.1.9, May 31 2012 -- Refactor requests into single private method. Added specific exception types.
 v0.1.8, May 02 2012 -- Fixed problem with dependencies during pip installation.
 v0.1.7, Apr 30 2012 -- added post requests, renamed get_batch() to batch(), added unittests
 v0.1.6, Apr 18 2012 -- Fixed major bug in FBGraph.get_batch() method.

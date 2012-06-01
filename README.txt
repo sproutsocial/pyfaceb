@@ -31,12 +31,12 @@ Basic Usage Examples
     print me['first_name']
      
     # prints out the name of all your likes
-    my_likes = fbg.get('me', 'likes')
+    my_likes = fbg.get('me/likes')
     for like in my_likes['data']:
         print like['name']
      
     # make a request with parameters...
-    my_first_3_likes = fbg.get('me', 'likes', {'limit': 3})
+    my_first_3_likes = fbg.get('me/likes', {'limit': 3})
      
     # get an object by it's ID #:
     facebook_platform_page = fbg.get('19292868552')
