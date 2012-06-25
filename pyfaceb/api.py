@@ -119,6 +119,21 @@ class FBGraph(object):
            
         There are optional params available, see:
         https://developers.facebook.com/docs/reference/api/batch/
+
+        Returns a list of completely deserialized python data structures for
+        each batch response, of the form:
+            [
+                {
+                    "headers": [{ ... }],
+                    "code": 200,
+                    "body": { ... }
+                },
+                ...
+            ]
+
+        If there was an error in an individual response, the "body" will
+        contain the deserialized Facebook error response.
+        See: https://developers.facebook.com/docs/reference/api/batch/
         """
         data = []
         payload = {
