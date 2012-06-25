@@ -1,0 +1,29 @@
+[
+  {
+  "code":200,
+  "headers":[
+    {"name":"Access-Control-Allow-Origin","value":"*"},
+    {"name":"Cache-Control","value":"private, no-cache, no-store, must-revalidate"},
+    {"name":"Connection","value":"close"},
+    {"name":"Content-Type","value":"text\/javascript; charset=UTF-8"},
+    {"name":"ETag","value":"\"fbdc858071c99ad95f5e7870bf4639c354449595\""},
+    {"name":"Expires","value":"Sat, 01 Jan 2000 00:00:00 GMT"},
+    {"name":"Last-Modified","value":"2012-03-29T22:37:16+0000"},
+    {"name":"Pragma","value":"no-cache"}
+  ],
+  "body":"{\"id\":\"537208670\",\"name\":\"Kevin Stanton\",\"first_name\":\"Kevin\",\"last_name\":\"Stanton\",\"link\":\"http:\\\/\\\/www.facebook.com\\\/kevin.r.stanton\",\"username\":\"kevin.r.stanton\",\"gender\":\"male\",\"timezone\":-5,\"locale\":\"en_US\",\"verified\":true,\"updated_time\":\"2012-03-29T22:37:16+0000\"}"
+  },
+  {
+  "code":400,
+  "headers":[
+    {"name":"Access-Control-Allow-Origin","value":"*"},
+    {"name":"Cache-Control","value":"private, no-cache, no-store, must-revalidate"},
+    {"name":"Connection","value":"close"},
+    {"name":"Content-Type","value":"text\/javascript; charset=UTF-8"},
+    {"name":"ETag","value":"\"e95745ef5e61484f09cab1ba8cc33c82a7d16d92\""},
+    {"name":"Expires","value":"Sat, 01 Jan 2000 00:00:00 GMT"},
+    {"name":"Pragma","value":"no-cache"}
+  ],
+  "body":"{\"error\": {\"message\": \"Error validating access token: The session has been invalidated because the user has changed the password.\",\"type\":\"OAuthException\",\"code\":190,\"error_subcode\":460}}"
+  }
+]

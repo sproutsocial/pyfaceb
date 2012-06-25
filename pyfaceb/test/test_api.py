@@ -67,6 +67,37 @@ class FBGraphTest(unittest.TestCase):
         self.assertRaises(FBConnectionException, fbg.post,
             'me', payload={'junk': 'data'})
 
+    @patch.object(requests, 'request')
+    def test_batch_with_individual_rqst_errors(self, request):
+        """
+        Ensure that when single requests in the batch contain an
+        error, the error json is deserialized properly and returned
+        for individual requests.
+        """
+        request.return_value = Mock()
+        request.return_value.status_code = 200
+        with open('./pyfaceb/test/test_batch_with_individual_rqst_errors.json', 'rb') as jsonfile:
+            request.return_value.text = jsonfile.read()
+
+        batch_requests = [
+            {'method': 'GET', 'relative_url': 'kevin.r.stanton'},
+            {'method': 'GET', 'relative_url': 'sproutsocialinc'}
+        ]
+
+        fbg = FBGraph('mocktoken')
+        responses = fbg.batch(batch_requests)
+
+        self.assertTrue(len(responses), 2)
+        self.assertEquals(responses[0]['code'], 200)
+        self.assertEquals(responses[0]['body']['id'], '537208670')
+        self.assertEquals(responses[1]['code'], 400)
+        self.assertDictEqual(responses[1]['body']['error'], {
+            'code': 190,
+            'type': 'OAuthException',
+            'error_subcode': 460,
+            'message': 'Error validating access token: The session has been invalidated because the user has changed the password.'
+        })
+
 class FBQueryTest(unittest.TestCase):
     @patch.object(requests, 'request')
     def test_basic_query(self, request):
