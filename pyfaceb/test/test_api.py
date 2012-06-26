@@ -33,6 +33,21 @@ class FBGraphTest(unittest.TestCase):
         self.assertEquals('SproutSocialInc', result['username'])
 
     @patch.object(requests, 'request')
+    def test_get_with_fields_arguments(self, request):
+        mock_response = Mock()
+        mock_response.text = '{"talking_about_count": 309, "likes": 6201, "id": "138467959508514"}'
+        mock_response.status_code = 200
+        request.return_value = mock_response
+        f = FBGraph()
+        result = f.get(
+            'sproutsocialinc', {'fields': 'likes,talking_about_count'})
+        self.assertDictEqual(result, {
+            "id": "138467959508514",
+            "likes": 6201,
+            "talking_about_count": 309
+        })
+
+    @patch.object(requests, 'request')
     def test_FBJSONException(self, request):
         mock_response = Mock()
         mock_response.text = 'i am bad json'
