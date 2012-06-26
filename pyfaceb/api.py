@@ -47,7 +47,7 @@ def _issue_request(method, relative_url, **kwargs):
         data = json.loads(r.text)
     except ValueError as e:
         log.warn("Error decoding JSON: {0}. JSON={1}".format(e.message, r.text))
-        raise FBJSONException(e.message)
+        raise FBJSONException("%s (%s)" % (e.message, r.text))
 
     return data
 

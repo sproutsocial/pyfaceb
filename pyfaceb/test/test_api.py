@@ -57,6 +57,12 @@ class FBGraphTest(unittest.TestCase):
         fbg = FBGraph()
         self.assertRaises(FBJSONException, fbg.get, 'me')
 
+        try:
+            fbg.get('me')
+        except FBJSONException as e:
+            self.assertEquals(
+                'No JSON object could be decoded (i am bad json)', e.message)
+
     @patch.object(requests, 'request')
     def test_FBHTTPException(self, request):
         mock_response = Mock()
