@@ -1,0 +1,123 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>PyFaceB by sproutsocial</title>
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script src="javascripts/respond.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <!--[if lt IE 8]>
+    <link rel="stylesheet" href="stylesheets/ie.css">
+    <![endif]-->
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+
+  </head>
+  <body>
+      <div id="header">
+        <nav>
+          <li class="fork"><a href="https://github.com/sproutsocial/pyfaceb">View On GitHub</a></li>
+          <li class="downloads"><a href="https://github.com/sproutsocial/pyfaceb/zipball/master">ZIP</a></li>
+          <li class="downloads"><a href="https://github.com/sproutsocial/pyfaceb/tarball/master">TAR</a></li>
+          <li class="title">DOWNLOADS</li>
+        </nav>
+      </div><!-- end header -->
+
+    <div class="wrapper">
+
+      <section>
+        <div id="title">
+          <h1>PyFaceB</h1>
+          <p>Battle-tested, lightweight Facebook API wrapper for Graph &amp; FQL.</p>
+          <hr>
+          <span class="credits left">Project maintained by <a href="https://github.com/sproutsocial">sproutsocial</a></span>
+          <span class="credits right">Hosted on GitHub Pages &mdash; Theme by <a href="http://twitter.com/#!/michigangraham">mattgraham</a></span>
+        </div>
+
+        <h1></h1>
+
+<h1>pyfaceb</h1>
+
+<h2>Introduction</h2>
+
+<p>This python library was started because most of the existing libraries
+out there (pyfacebook, facepy, facebook python-sdk) are either no longer
+in development, use the old REST API, or are lacking in support of the
+more advanced features available, such as batch querying and FQL
+support.</p>
+
+<h2>Purpose</h2>
+
+<p>A lightweight Python wrapper for the Facebook Graph API and Facebook
+Query Language (FQL) interface.</p>
+
+<p>Supports basic and advanced features of the Graph API, including batched
+API queries, optionally with multiple access_token's.</p>
+
+<h2>Basic Usage Examples</h2>
+
+<pre><code>fbg = FBGraph('access-token')
+
+me = fbg.get('me')
+
+# prints your first name
+print me['first_name']
+
+# prints out the name of all your likes
+my_likes = fbg.get('me/likes')
+for like in my_likes['data']:
+    print like['name']
+
+# make a request with parameters...
+my_first_3_likes = fbg.get('me/likes', {'limit': 3})
+
+# get an object by it's ID #:
+facebook_platform_page = fbg.get('19292868552')
+</code></pre>
+
+<h2>Batched Query Examples</h2>
+
+<pre><code># batched queries with a single access token
+fbg = FBGraph('access-token')
+
+# you can write it manually if you like...
+results = fbg.batch([
+    {'method': 'GET', 'relative_url': 'me'},
+    {'method': 'GET', 'relative_url': 'me/friends?limit=50'}
+])
+
+# or use the GetRequestFactory
+batch = [GetRequestFactory('me'), GetRequestFactory('me/friends', limit=50)]
+fbg.batch(batch)
+
+# If you need to use multiple access tokens in
+# one batch call, you can!
+# Note, you still must specify a "fallback" token when you create an
+# instance of FBGraph()
+fbg.batch([
+    GetRequestFactory('PAGE1_FB_OBJ_ID', access_token=PAGE1_ACCESS_TOKEN),
+    GetRequestFactory('PAGE2_FB_OBJ_ID', access_token=PAGE2_ACCESS_TOKEN),
+    GetRequestFactory('PAGE3_FB_OBJ_ID', access_token=PAGE3_ACCESS_TOKEN),
+])
+</code></pre>
+      </section>
+
+    </div>
+    <!--[if !IE]><script>fixScale(document);</script><!--<![endif]-->
+              <script type="text/javascript">
+            var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+            document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+          </script>
+          <script type="text/javascript">
+            try {
+              var pageTracker = _gat._getTracker("UA-33347814-1");
+            pageTracker._trackPageview();
+            } catch(err) {}
+          </script>
+
+  </body>
+</html>
