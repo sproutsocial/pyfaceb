@@ -10,7 +10,16 @@ class FBHTTPException(FBException):
     This exception is raised for HTTP errors encountered, i.e. a non-200 HTTP
     status codes.
     """
-    pass
+    def __init__(self, code, body):
+        self.code = code
+        self.body = body
+
+        # for backwards compatibility
+        self.message = body
+
+    def __str__(self):
+        values = (self.__class__.__name__, self.code, self.body)
+        return '%s(%s, \'%s\')' % values
 
 class FBJSONException(FBException):
     """

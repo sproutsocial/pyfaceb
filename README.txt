@@ -6,19 +6,22 @@ Introduction
 ------------
 
 This python library was started because most of the existing libraries
-out there (pyfacebook, facepy, facebook python-sdk) are either no longer
-in development, use the old REST API, or are lacking in support of the
-more advanced features available, such as batch querying and FQL
-support.
+out there are either no longer in development, use the old REST API, or
+are lacking in support of the more advanced features available, such as
+batch querying and FQL support.
 
 Purpose
 -------
 
-A lightweight Python wrapper for the Facebook Graph API and Facebook
-Query Language (FQL) interface.
+The goals of this module are two fold:
 
-Supports basic and advanced features of the Graph API, including batched
-API queries, optionally with multiple access_token's.
+    1. to provide a lightweight, easy to use Python wrapper for the Facebook
+    Graph API and Facebook Query Language (FQL) interface.
+
+    2. to provide a nice API to Facebook's batch query interface.
+
+    3. to make it easy to use multiple access tokens, where appropriate /
+    necessary.
 
 Basic Usage Examples
 --------------------

@@ -1,3 +1,4 @@
+v0.2.1, Jul 23 2012 -- FBHTTPException now contains the HTTP code and body of the response.
 v0.2.0, Jun 01 2012 -- FBGraph get(), post() signature change to simplify calls & make orthogonal to batch rqsts
 v0.1.9, May 31 2012 -- Refactor requests into single private method. Added specific exception types.
 v0.1.8, May 02 2012 -- Fixed problem with dependencies during pip installation.

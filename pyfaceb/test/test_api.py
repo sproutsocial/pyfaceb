@@ -75,7 +75,12 @@ class FBGraphTest(unittest.TestCase):
         try:
             data = fbg.get('me')
         except FBHTTPException as e:
+            self.assertEquals(e.code, mock_response.status_code)
+            self.assertEquals(e.body, mock_response.text)
             self.assertEquals(e.message, 'some fb error')
+            self.assertEquals(
+                e.__str__(),
+                'FBHTTPException(400, \'some fb error\')')
 
     @patch.object(requests, 'request')
     def test_FBConnectionException(self, request):

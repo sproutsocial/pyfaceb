@@ -41,7 +41,7 @@ def _issue_request(method, relative_url, **kwargs):
         raise FBConnectionException(e.message)
 
     if r.status_code != requests.codes.ok:
-        raise FBHTTPException(r.text)
+        raise FBHTTPException(r.status_code, r.text)
 
     try:
         data = json.loads(r.text)

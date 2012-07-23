@@ -3,3 +3,4 @@ MANIFEST
 dist
 .project
 .pydevproject
+pyfaceb/test/private
