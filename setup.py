@@ -10,7 +10,7 @@ setup(
     author='Kevin Stanton',
     author_email='kevin@sproutsocial.com',
     packages=['pyfaceb', 'pyfaceb.test'],
-    url='https://github.com/sproutsocial/pyfaceb',
+    url='http://sproutsocial.github.com/pyfaceb/',
     license='LICENSE.txt',
     install_requires = ['requests >= 0.10', 'mock >= 0.8.0'],
     description='Full-featured, lightweight Facebook API wrapper for Graph & FQL.',
