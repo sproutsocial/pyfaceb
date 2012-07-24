@@ -7,6 +7,8 @@ test_release:
 release:
 	python setup.py sdist upload
 
-tests:
-	#python -m unittest pyfaceb.test.test_api
+test_all:
 	python -m unittest discover
+
+test_public:
+	python -m unittest pyfaceb.test.test_api
