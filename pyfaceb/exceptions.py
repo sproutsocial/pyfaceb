@@ -17,9 +17,12 @@ class FBHTTPException(FBException):
         # for backwards compatibility
         self.message = body
 
-    def __str__(self):
+    def __repr__(self):
         values = (self.__class__.__name__, self.code, self.body)
         return '%s(%s, \'%s\')' % values
+
+    def __str__(self):
+        return self.__repr__()
 
 class FBJSONException(FBException):
     """

@@ -81,6 +81,10 @@ class FBGraphTest(unittest.TestCase):
             self.assertEquals(
                 e.__str__(),
                 'FBHTTPException(400, \'some fb error\')')
+            self.assertEquals(
+                e.__repr__(),
+                'FBHTTPException(400, \'some fb error\')')
+
 
     @patch.object(requests, 'request')
     def test_FBConnectionException(self, request):
