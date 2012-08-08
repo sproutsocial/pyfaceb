@@ -31,12 +31,12 @@ def _issue_request(method, relative_url, **kwargs):
 
     Returns: deserialized JSON as native Python data structures.
     """
-    data = {}
-
     url = BASE_GRAPH_URL + ('/%s' % relative_url)
+    if 'timeout' not in kwargs:
+        kwargs['timeout'] = TIMEOUT
+
     try:
-        r = requests.request(method, url,
-            timeout=TIMEOUT, config=REQUESTS_CONFIG, **kwargs)
+        r = requests.request(method, url, config=REQUESTS_CONFIG, **kwargs)
     except (SSLError, Timeout) as e:
         raise FBConnectionException(e.message)
 
@@ -54,10 +54,11 @@ def _issue_request(method, relative_url, **kwargs):
 #TODO: PUT, DELETE request factories
 
 class FBGraph(object):
-    def __init__(self, access_token=''):
+    def __init__(self, access_token='', timeout=TIMEOUT):
 
         self._access_token = access_token
         self._response_fmt = 'json'
+        self._timeout = timeout
 
     def get(self, relative_url, params=None):
         """
@@ -68,7 +69,8 @@ class FBGraph(object):
         params = params or {}
         params['access_token'] = self._access_token
 
-        data = _issue_request('get', relative_url, params=params)
+        data = _issue_request('get', relative_url, params=params,
+            timeout=self._timeout)
 
         return data
     
@@ -106,7 +108,8 @@ class FBGraph(object):
         payload = payload or {}
         payload['access_token'] = self._access_token
         
-        data = _issue_request('post', relative_url, data=payload, files=files)
+        data = _issue_request('post', relative_url, data=payload, files=files,
+            timeout=self._timeout)
 
         return data
 
@@ -141,7 +144,7 @@ class FBGraph(object):
             'access_token': self._access_token
         }
 
-        data = _issue_request('post', '', data=payload)
+        data = _issue_request('post', '', data=payload, timeout=self._timeout)
         
         # deserialize the body of each batch response, need to make sure it
         # is deserializable, thanks to this bug:
@@ -159,13 +162,13 @@ class FBGraph(object):
 
 
 class FBQuery(object):
-    def __init__(self, access_token):
+    def __init__(self, access_token, timeout=TIMEOUT):
         self._access_token = access_token
         # currrently only support json response format
         self._response_fmt = 'json'
+        self._timeout = timeout
 
     def query(self, fql_str):
-        data = {}
         params = {
             'q': fql_str,
             'access_token' : self._access_token,
@@ -174,7 +177,8 @@ class FBQuery(object):
 
         start_time = time.time()
 
-        data = _issue_request('get', 'fql', params=params)
+        data = _issue_request('get', 'fql', params=params,
+            timeout=self._timeout)
 
         stop_time = time.time()
         duration = stop_time - start_time
