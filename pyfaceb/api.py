@@ -8,7 +8,6 @@ from .exceptions import (FBException, FBHTTPException, FBJSONException,
     FBConnectionException)
 
 BASE_GRAPH_URL = "https://graph.facebook.com"
-BASE_FQL_URL = "https://graph.facebook.com/fql?"
 BATCH_QUERY_LIMIT = 50
 TIMEOUT = 60.0
 REQUESTS_CONFIG = {'max_retries': 2}
@@ -159,28 +158,3 @@ class FBGraph(object):
         
         return data
 
-
-class FBQuery(object):
-    def __init__(self, access_token, timeout=TIMEOUT):
-        self._access_token = access_token
-        # currrently only support json response format
-        self._response_fmt = 'json'
-        self._timeout = timeout
-
-    def query(self, fql_str):
-        params = {
-            'q': fql_str,
-            'access_token' : self._access_token,
-            'format': self._response_fmt
-        }
-
-        start_time = time.time()
-
-        data = _issue_request('get', 'fql', params=params,
-            timeout=self._timeout)
-
-        stop_time = time.time()
-        duration = stop_time - start_time
-        data['query_time'] = duration
-
-        return data
