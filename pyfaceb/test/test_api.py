@@ -5,7 +5,6 @@ from mock import patch, Mock
 from pyfaceb.exceptions import (FBJSONException, FBHTTPException,
                                 FBConnectionException)
 from requests.exceptions import SSLError
-from pyfaceb.api import FBQuery
 
 class FBGraphTest(unittest.TestCase):
     
@@ -126,28 +125,5 @@ class FBGraphTest(unittest.TestCase):
             'type': 'OAuthException',
             'error_subcode': 460,
             'message': 'Error validating access token: The session has been invalidated because the user has changed the password.'
-        })
-
-class FBQueryTest(unittest.TestCase):
-    @patch.object(requests, 'request')
-    def test_basic_query(self, request):
-        mock_response = Mock()
-        mock_response.text = '{"data": [{"metric": "post_impressions_unique", '
-        mock_response.text += '"value": 6740, "object_id": "123_456"}]}'
-        mock_response.status_code = 200
-        request.return_value = mock_response
-
-        qry = 'select object_id, value, metric from insights where object_id '
-        qry += 'in (\'123_456\') and metric in (\'post_impressions_unique\') '
-        qry += 'and period=period(\'lifetime\')'
-
-        fbq = FBQuery('fakeaccesstoken')
-        data = fbq.query(qry)
-
-        self.assertEquals(len(data['data']), 1)
-        self.assertDictEqual(data['data'][0], {
-            'object_id': '123_456',
-            'metric': 'post_impressions_unique',
-            'value': 6740
         })
 
