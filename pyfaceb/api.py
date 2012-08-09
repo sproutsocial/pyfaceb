@@ -23,42 +23,24 @@ def GetRequestFactory(relative_url, **params):
 
     return params
 
-def _issue_request(method, relative_url, **kwargs):
-    """
-    Generic method for making requests to the Graph API and deserializing
-    the response. Here we aggregate all general error-handling & exception
-    catching/raising.
-
-    Returns: deserialized JSON as native Python data structures.
-    """
-    url = BASE_GRAPH_URL + ('/%s' % relative_url)
-    kwargs['timeout'] = kwargs.get('timeout', TIMEOUT)
-    kwargs['verify'] = kwargs.get('verify', VERIFY_SSL)
-
-    try:
-        r = requests.request(method, url, config=REQUESTS_CONFIG, **kwargs)
-    except (SSLError, Timeout) as e:
-        raise FBConnectionException(e.message)
-
-    if r.status_code != requests.codes.ok:
-        raise FBHTTPException(r.status_code, r.text)
-
-    try:
-        data = json.loads(r.text)
-    except ValueError as e:
-        log.warn("Error decoding JSON: {0}. JSON={1}".format(e.message, r.text))
-        raise FBJSONException("%s (%s)" % (e.message, r.text))
-
-    return data
-
 #TODO: PUT, DELETE request factories
 
 class FBGraph(object):
-    def __init__(self, access_token='', timeout=TIMEOUT):
+    def __init__(self, access_token='', timeout=TIMEOUT,
+                 pre_hook=None, post_hook=None):
+        """
+        :param access_token: A valid Facebook access token.
+        :param timeout: Per-request HTTP timeout. Default is 60.0 seconds.
+        :param pre_hook: Callable that will run before a request is made.
+        :param post_hook: Callable that will run after a request is made.
+        :return: FBGraph instance.
+        """
 
         self._access_token = access_token
         self._response_fmt = 'json'
         self._timeout = timeout
+        self.pre_hook = pre_hook
+        self.post_hook = post_hook
 
     def get(self, relative_url, params=None):
         """
@@ -68,7 +50,7 @@ class FBGraph(object):
         params = params or {}
         params['access_token'] = self._access_token
 
-        data = _issue_request('get', relative_url, params=params,
+        data = self._issue_request('get', relative_url, params=params,
             timeout=self._timeout)
 
         return data
@@ -107,8 +89,8 @@ class FBGraph(object):
         payload = payload or {}
         payload['access_token'] = self._access_token
         
-        data = _issue_request('post', relative_url, data=payload, files=files,
-            timeout=self._timeout)
+        data = self._issue_request('post', relative_url, data=payload,
+            files=files, timeout=self._timeout)
 
         return data
 
@@ -142,7 +124,8 @@ class FBGraph(object):
             'access_token': self._access_token
         }
 
-        data = _issue_request('post', '', data=payload, timeout=self._timeout)
+        data = self._issue_request('post', '', data=payload,
+            timeout=self._timeout)
         
         # deserialize the body of each batch response, need to make sure it
         # is deserializable, thanks to this bug:
@@ -157,4 +140,48 @@ class FBGraph(object):
                     pass
         
         return data
+
+    def _issue_request(self, method, relative_url, **kwargs):
+        """
+        Generic method for making requests to the Graph API and deserializing
+        the response. Here we aggregate all general error-handling & exception
+        catching/raising.
+
+        Returns: deserialized JSON as native Python data structures.
+        """
+        url = BASE_GRAPH_URL + ('/%s' % relative_url)
+        kwargs['timeout'] = kwargs.get('timeout', TIMEOUT)
+        kwargs['verify'] = kwargs.get('verify', VERIFY_SSL)
+
+        self._exec_hook('pre')
+        try:
+            r = requests.request(method, url, config=REQUESTS_CONFIG, **kwargs)
+        except (SSLError, Timeout) as e:
+            raise FBConnectionException(e.message)
+        self._exec_hook('post')
+
+        if r.status_code != requests.codes.ok:
+            raise FBHTTPException(r.status_code, r.text)
+
+        try:
+            data = json.loads(r.text)
+        except ValueError as e:
+            log.warn("Error decoding JSON: {0}. JSON={1}".format(e.message, r.text))
+            raise FBJSONException("%s (%s)" % (e.message, r.text))
+
+        return data
+
+    def _exec_hook(self, hook_type):
+        hook = None
+
+        if hook_type == 'pre':
+            hook = self.pre_hook
+        elif hook_type == 'post':
+            hook = self.post_hook
+
+        if callable(hook):
+            try:
+                hook()
+            except Exception as e:
+                log.warning('Warning: pre_hook raised %s', e.message)
 

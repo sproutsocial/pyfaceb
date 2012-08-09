@@ -127,3 +127,21 @@ class FBGraphTest(unittest.TestCase):
             'message': 'Error validating access token: The session has been invalidated because the user has changed the password.'
         })
 
+    @patch.object(requests, 'request')
+    def test_request_hooks(self, request):
+        request.return_value = Mock()
+        request.return_value.status_code = 200
+        request.return_value.text = '{}'
+
+        pre_hook = Mock()
+        post_hook = Mock()
+
+        f = FBGraph(pre_hook=pre_hook, post_hook=post_hook)
+
+        result = f.get('thing1')
+        self.assertDictEqual(result, {})
+        result = f.get('thing2')
+        self.assertDictEqual(result, {})
+        self.assertEquals(pre_hook.call_count, 2)
+        self.assertEquals(post_hook.call_count, 2)
+
