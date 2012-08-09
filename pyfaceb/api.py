@@ -12,6 +12,7 @@ BASE_FQL_URL = "https://graph.facebook.com/fql?"
 BATCH_QUERY_LIMIT = 50
 TIMEOUT = 60.0
 REQUESTS_CONFIG = {'max_retries': 2}
+VERIFY_SSL = False
 
 log = logging.getLogger(__name__)
 
@@ -32,8 +33,8 @@ def _issue_request(method, relative_url, **kwargs):
     Returns: deserialized JSON as native Python data structures.
     """
     url = BASE_GRAPH_URL + ('/%s' % relative_url)
-    if 'timeout' not in kwargs:
-        kwargs['timeout'] = TIMEOUT
+    kwargs['timeout'] = kwargs.get('timeout', TIMEOUT)
+    kwargs['verify'] = kwargs.get('verify', VERIFY_SSL)
 
     try:
         r = requests.request(method, url, config=REQUESTS_CONFIG, **kwargs)
@@ -65,7 +66,6 @@ class FBGraph(object):
         Query facebook's graph api at relative_url with
         query string parameters params, where params is a python dict.
         """
-        data = {}
         params = params or {}
         params['access_token'] = self._access_token
 
@@ -138,7 +138,6 @@ class FBGraph(object):
         contain the deserialized Facebook error response.
         See: https://developers.facebook.com/docs/reference/api/batch/
         """
-        data = []
         payload = {
             'batch': json.dumps(batch),
             'access_token': self._access_token
