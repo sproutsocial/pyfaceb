@@ -13,8 +13,6 @@ batch querying and FQL support.
 Purpose
 -------
 
-The goals of this module are two fold:
-
     1. to provide a lightweight, easy to use Python wrapper for the Facebook
     Graph API and Facebook Query Language (FQL) interface.
 
@@ -70,7 +68,3 @@ Batched Query Examples
         GetRequestFactory('PAGE3_FB_OBJ_ID', access_token=PAGE3_ACCESS_TOKEN),
     ])
    
-
-   
-
-
