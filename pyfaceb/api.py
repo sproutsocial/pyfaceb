@@ -10,7 +10,6 @@ from .exceptions import (FBException, FBHTTPException, FBJSONException,
 BASE_GRAPH_URL = "https://graph.facebook.com"
 BATCH_QUERY_LIMIT = 50
 TIMEOUT = 60.0
-REQUESTS_CONFIG = {'max_retries': 2}
 VERIFY_SSL = False
 
 log = logging.getLogger(__name__)
@@ -155,7 +154,7 @@ class FBGraph(object):
 
         self._exec_hook('pre')
         try:
-            r = requests.request(method, url, config=REQUESTS_CONFIG, **kwargs)
+            r = requests.request(method, url, **kwargs)
         except (SSLError, Timeout) as e:
             raise FBConnectionException(e.message)
         self._exec_hook('post')
