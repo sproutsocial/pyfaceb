@@ -1,3 +1,4 @@
+v0.2.4, Jun 18 2013 -- Updated to mock 1.0.1, requests 1.1.0
 v0.2.3, Aug 09 2012 -- Disabled SSL verification by default, allow control via constructor.
                        Removed FBQuery & tests.
                        Refactor _issue_request, added pre and post request hooks.
