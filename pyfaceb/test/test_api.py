@@ -156,7 +156,7 @@ class FBGraphTest(unittest.TestCase):
         fbg = FBGraph('mocktoken')
         responses = fbg.batch(batch_requests)
 
-        self.assertTrue(len(responses), 2)
+        self.assertEquals(len(responses), 2)
         self.assertEquals(responses[0]['code'], 200)
         self.assertEquals(responses[0]['body']['id'], '537208670')
         self.assertEquals(responses[1]['code'], 400)
