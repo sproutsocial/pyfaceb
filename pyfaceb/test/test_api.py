@@ -1,13 +1,22 @@
+import json
+import os
 import unittest
+
 import requests
-from pyfaceb import FBGraph
-from mock import patch, Mock
-from pyfaceb.exceptions import (FBJSONException, FBHTTPException,
-                                FBConnectionException)
+from mock import Mock
+from mock import patch
 from requests.exceptions import SSLError
 
+from pyfaceb.api import FBGraph
+from pyfaceb.exceptions import FBConnectionException
+from pyfaceb.exceptions import FBHTTPException
+from pyfaceb.exceptions import FBJSONException
+
+
+FIXTURES = os.path.dirname(__file__)
+
 class FBGraphTest(unittest.TestCase):
-    
+
     def test_basic_get_personal_profile(self):
         expected = {
             u'username': u'kevin.r.stanton',
@@ -21,7 +30,7 @@ class FBGraphTest(unittest.TestCase):
         fbg = FBGraph()
         result = fbg.get('kevin.r.stanton')
         self.assertDictEqual(expected, result)
-        
+
     def test_basic_get_company_profile(self):
         fbg = FBGraph()
         result = fbg.get('SproutSocialInc')
@@ -64,26 +73,52 @@ class FBGraphTest(unittest.TestCase):
 
     @patch.object(requests, 'request')
     def test_FBHTTPException(self, request):
+        exp_fb_error = {'error': {'message': '(#1000) Facebook error message',
+                                  'code': 1000}}
+
         mock_response = Mock()
-        mock_response.text = 'some fb error'
+        mock_response.text = json.dumps(exp_fb_error)
         mock_response.status_code = 400
         request.return_value = mock_response
 
         fbg = FBGraph()
         self.assertRaises(FBHTTPException, fbg.get, 'me')
         try:
-            data = fbg.get('me')
+            fbg.get('me')
         except FBHTTPException as e:
-            self.assertEquals(e.code, mock_response.status_code)
-            self.assertEquals(e.body, mock_response.text)
-            self.assertEquals(e.message, 'some fb error')
+            self.assertEquals(e.code, 400)
+            self.assertEquals(e.body, json.dumps(exp_fb_error))
+            self.assertEquals(e.json, exp_fb_error)
+            self.assertEquals(e.message, json.dumps(exp_fb_error))
             self.assertEquals(
                 e.__str__(),
-                'FBHTTPException(400, \'some fb error\')')
+                'FBHTTPException(400, %s)' % json.dumps(exp_fb_error))
             self.assertEquals(
                 e.__repr__(),
-                'FBHTTPException(400, \'some fb error\')')
+                'FBHTTPException(400, %s)' % json.dumps(exp_fb_error))
 
+    @patch.object(requests, 'request')
+    def test_FBHTTPException_bad_json(self, request):
+        mock_response = Mock()
+        mock_response.status_code = 400
+        mock_response.text = 'non-json error'
+        request.return_value = mock_response
+
+        fbg = FBGraph()
+        self.assertRaises(FBHTTPException, fbg.get, 'me')
+        try:
+            fbg.get('me')
+        except FBHTTPException as e:
+            self.assertEquals(e.code, 400)
+            self.assertEquals(e.body, 'non-json error')
+            self.assertEquals(e.json, FBHTTPException.FALLBACK_ERROR_OBJ)
+            self.assertEquals(e.message, 'non-json error')
+            self.assertEquals(
+                e.__str__(),
+                'FBHTTPException(400, %s)' % 'non-json error')
+            self.assertEquals(
+                e.__repr__(),
+                'FBHTTPException(400, %s)' % 'non-json error')
 
     @patch.object(requests, 'request')
     def test_FBConnectionException(self, request):
@@ -93,8 +128,11 @@ class FBGraphTest(unittest.TestCase):
 
         fbg = FBGraph()
         self.assertRaises(FBConnectionException, fbg.get, 'me')
-        self.assertRaises(FBConnectionException, fbg.post,
-            'me', payload={'junk': 'data'})
+        self.assertRaises(
+            FBConnectionException,
+            fbg.post,
+            'me',
+            payload={'junk': 'data'})
 
     @patch.object(requests, 'request')
     def test_batch_with_individual_rqst_errors(self, request):
@@ -103,9 +141,11 @@ class FBGraphTest(unittest.TestCase):
         error, the error json is deserialized properly and returned
         for individual requests.
         """
+        fixture = 'test_batch_with_individual_rqst_errors.json'
+
         request.return_value = Mock()
         request.return_value.status_code = 200
-        with open('./pyfaceb/test/test_batch_with_individual_rqst_errors.json', 'rb') as jsonfile:
+        with open(os.path.join(FIXTURES, fixture), 'rb') as jsonfile:
             request.return_value.text = jsonfile.read()
 
         batch_requests = [
@@ -124,7 +164,8 @@ class FBGraphTest(unittest.TestCase):
             'code': 190,
             'type': 'OAuthException',
             'error_subcode': 460,
-            'message': 'Error validating access token: The session has been invalidated because the user has changed the password.'
+            'message': ('Error validating access token: The session has been ' +
+                        'invalidated because the user has changed the password.')
         })
 
     @patch.object(requests, 'request')
@@ -144,4 +185,3 @@ class FBGraphTest(unittest.TestCase):
         self.assertDictEqual(result, {})
         self.assertEquals(pre_hook.call_count, 2)
         self.assertEquals(post_hook.call_count, 2)
-
