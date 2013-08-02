@@ -95,6 +95,27 @@ class FBGraph(object):
 
         return data
 
+    def delete(self, relative_url, payload=None):
+        """
+        Publish a DELETE to the graph.
+        Returns a deserialized python object, see
+        `Graph API<https://developers.facebook.com/docs/reference/api/>`_
+
+        Note: this method requires a valid access token to work.
+
+        Example 1::
+            data = fbg.delete('537208670_111222333444555666777')
+            print data
+            # True or False
+        """
+        payload = payload or {}
+        payload['access_token'] = self._access_token
+
+        data = self._issue_request('delete', relative_url, data=payload,
+                                   timeout=self._timeout)
+
+        return data
+
     def batch(self, batch):
         """
         Query's facebook's graph api in batches. batch is a list of dicts,
