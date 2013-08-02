@@ -1,10 +1,15 @@
-import requests
 import json
 import logging
-from requests.exceptions import SSLError, Timeout
 
-from .exceptions import (FBException, FBHTTPException, FBJSONException,
-    FBConnectionException)
+import requests
+from requests.exceptions import SSLError
+from requests.exceptions import Timeout
+
+from .exceptions import FBConnectionException
+from .exceptions import FBException
+from .exceptions import FBHTTPException
+from .exceptions import FBJSONException
+
 
 BASE_GRAPH_URL = "https://graph.facebook.com"
 BATCH_QUERY_LIMIT = 50
