@@ -1,6 +1,5 @@
 import requests
 import json
-import time
 import logging
 from requests.exceptions import SSLError, Timeout
 
@@ -21,8 +20,6 @@ def GetRequestFactory(relative_url, **params):
     params['relative_url'] = relative_url
 
     return params
-
-#TODO: PUT, DELETE request factories
 
 class FBGraph(object):
     def __init__(self, access_token='', timeout=TIMEOUT,
