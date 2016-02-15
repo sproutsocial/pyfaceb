@@ -1,6 +1,9 @@
-=======
 pyfaceb
 =======
+
+![https://pypi.python.org/pypi/pyfaceb](https://img.shields.io/pypi/v/pyfaceb.svg)
+![https://pypi.python.org/pypi/pyfaceb](https://img.shields.io/pypi/dm/pyfaceb.svg)
+
 
 Introduction
 ------------
